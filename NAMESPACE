@@ -1,0 +1,9 @@
+useDynLib(RandomForestsGLS, .registration=TRUE)
+
+export(RFGLS_estimate_spatial)
+export(RFGLS_estimate_timeseries)
+export(RFGLS_predict)
+export(RFGLS_predict_spatial)
+
+
+import(BRISC, parallel, stats, matrixStats, randomForest, pbapply)
