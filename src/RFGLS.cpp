@@ -132,7 +132,7 @@ extern "C" {
     free(X0);
     free(iwork);
     free(work);
-    free(jvpt);
+    delete [] jvpt;
     free(tmp_n);
     return(rss);
 
@@ -174,7 +174,7 @@ extern "C" {
 
     free(X0);
     free(work);
-    free(jvpt);
+    delete [] jvpt;
     return(y0);
 
   }
@@ -220,7 +220,7 @@ extern "C" {
     free(X0);
     free(iwork);
     free(work);
-    free(s);
+    delete [] s;
     return(rss);
   }
 
@@ -265,7 +265,7 @@ extern "C" {
     free(X0);
     free(iwork);
     free(work);
-    free(s);
+    delete [] s;
     return(beta);
   }
 
