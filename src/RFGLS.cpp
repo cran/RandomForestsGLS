@@ -1,10 +1,4 @@
 #include <string>
-#include <R.h>
-#include <Rmath.h>
-#include <Rinternals.h>
-#include <R_ext/Linpack.h>
-#include <R_ext/Lapack.h>
-#include <R_ext/BLAS.h>
 #include <stdio.h>
 #include <limits>
 #include "util.h"
@@ -12,6 +6,14 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+#include <R.h>
+#include <Rmath.h>
+#include <Rinternals.h>
+#include <R_ext/Linpack.h>
+#include <R_ext/Lapack.h>
+#include <R_ext/BLAS.h>
+
 
 #define Ind(a,b) (((a)==(b))?(1.0):(0.0))
 #define swapInt(a, b) ((a ^= b), (b ^= a), (a ^= b))
