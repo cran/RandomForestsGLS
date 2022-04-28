@@ -1,3 +1,4 @@
+#define USE_FC_LEN_T
 #include <string>
 #include <stdio.h>
 #include <limits>
@@ -10,10 +11,14 @@
 #include <R.h>
 #include <Rmath.h>
 #include <Rinternals.h>
+#include <Rconfig.h>
 #include <R_ext/Linpack.h>
 #include <R_ext/Lapack.h>
 #include <R_ext/BLAS.h>
 
+#ifndef FCONE
+#define FCONE
+#endif
 
 #define Ind(a,b) (((a)==(b))?(1.0):(0.0))
 #define swapInt(a, b) ((a ^= b), (b ^= a), (a ^= b))
@@ -63,9 +68,9 @@ void updateBF_org(double *B, double *F, double *c, double *C, double *D, double 
           }
         }
       }
-      F77_NAME(dpotrf)(&lower, &nnIndxLU[n+i], &C[CIndx[i]], &nnIndxLU[n+i], &info); if(info != 0){error("c++ error: dpotrf failed\n");}
-      F77_NAME(dpotri)(&lower, &nnIndxLU[n+i], &C[CIndx[i]], &nnIndxLU[n+i], &info); if(info != 0){error("c++ error: dpotri failed\n");}
-      F77_NAME(dsymv)(&lower, &nnIndxLU[n+i], &one, &C[CIndx[i]], &nnIndxLU[n+i], &c[nnIndxLU[i]], &inc, &zero, &B[nnIndxLU[i]], &inc);
+      F77_NAME(dpotrf)(&lower, &nnIndxLU[n+i], &C[CIndx[i]], &nnIndxLU[n+i], &info FCONE); if(info != 0){error("c++ error: dpotrf failed\n");}
+      F77_NAME(dpotri)(&lower, &nnIndxLU[n+i], &C[CIndx[i]], &nnIndxLU[n+i], &info FCONE); if(info != 0){error("c++ error: dpotri failed\n");}
+      F77_NAME(dsymv)(&lower, &nnIndxLU[n+i], &one, &C[CIndx[i]], &nnIndxLU[n+i], &c[nnIndxLU[i]], &inc, &zero, &B[nnIndxLU[i]], &inc FCONE);
       F[i] = 1 - F77_NAME(ddot)(&nnIndxLU[n+i], &B[nnIndxLU[i]], &inc, &c[nnIndxLU[i]], &inc) + theta[0];
     }else{
       B[i] = 0;
@@ -118,7 +123,7 @@ extern "C" {
     const double one = 1.0;
     const double zero = 0.0;
     double *tmp_n = (double *) malloc(m * sizeof(double));
-    F77_NAME(dgemv)(ntran, &m, &n, &one, A, &m, y0, &inc, &zero, tmp_n, &inc);
+    F77_NAME(dgemv)(ntran, &m, &n, &one, A, &m, y0, &inc, &zero, tmp_n, &inc FCONE);
 
 
     //create residual

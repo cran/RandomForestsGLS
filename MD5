@@ -1,4 +1,4 @@
-eb3e3cf9988e829efee74b95656f7dcc *DESCRIPTION
+8b83552e0f69f8c0b34c5f33823b52b7 *DESCRIPTION
 dbd630a66535668f84eb0bda0e1ec517 *NAMESPACE
 5993012a308cc4c3291419da76fa00c2 *R/RFGLS_estimate_spatial.R
 ca1a7f0d7c22bce6c05b2a1d1805e2fc *R/RFGLS_estimate_timeseries.R
@@ -8,13 +8,13 @@ efd7744db924097e1e56dcc466b16f72 *R/RFGLS_predict_spatial.R
 51fbe9ede928432d2206f64bdf344476 *build/vignette.rds
 77ae277967fd90ff94cab91f6445ac9d *inst/doc/RandomForestsGLS_user_guide.R
 8ddeeb504721d3a5b45690d3099c56be *inst/doc/RandomForestsGLS_user_guide.Rmd
-11383ea99c02b37c5d5aa7ad00b17ee7 *inst/doc/RandomForestsGLS_user_guide.pdf
+0e44f9fd179e677830e5868f63802dd5 *inst/doc/RandomForestsGLS_user_guide.pdf
 1cc810fe93229a3d19bb99e12f6f10fb *man/RFGLS_estimate_spatial.Rd
 b1fe53a1d3f1426e6cf4cb0a1670e5ad *man/RFGLS_estimate_timeseries.Rd
 01dd7d6254aac4c67f0f536b85fc3806 *man/RFGLS_predict.Rd
 75236efc9b6025cfd4977ce19107f03d *man/RFGLS_predict_spatial.Rd
 9ae100fdd0b23ebcdaefe1704a0077ff *src/Makevars
-517c61840f5b29b11f2eba1660bb7d01 *src/RFGLS.cpp
+74c43927b72766aec8ab2b7f5bd6cf9a *src/RFGLS.cpp
 39a960e5d99c40ea2a2bee76b422f453 *src/packagename_init.c
 440d5186297d6f732702bccdefb094ce *src/util.cpp
 ecc03356ac88b7c6190c2b1a814ee5a9 *src/util.h
