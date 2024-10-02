@@ -1,3 +1,7 @@
+#ifndef R_NO_REMAP
+#  define R_NO_REMAP
+#endif
+
 #define USE_FC_LEN_T
 #include <string>
 #include <stdio.h>
@@ -68,8 +72,8 @@ void updateBF_org(double *B, double *F, double *c, double *C, double *D, double 
           }
         }
       }
-      F77_NAME(dpotrf)(&lower, &nnIndxLU[n+i], &C[CIndx[i]], &nnIndxLU[n+i], &info FCONE); if(info != 0){error("c++ error: dpotrf failed\n");}
-      F77_NAME(dpotri)(&lower, &nnIndxLU[n+i], &C[CIndx[i]], &nnIndxLU[n+i], &info FCONE); if(info != 0){error("c++ error: dpotri failed\n");}
+      F77_NAME(dpotrf)(&lower, &nnIndxLU[n+i], &C[CIndx[i]], &nnIndxLU[n+i], &info FCONE); if(info != 0){Rf_error("c++ error: dpotrf failed\n");}
+      F77_NAME(dpotri)(&lower, &nnIndxLU[n+i], &C[CIndx[i]], &nnIndxLU[n+i], &info FCONE); if(info != 0){Rf_error("c++ error: dpotri failed\n");}
       F77_NAME(dsymv)(&lower, &nnIndxLU[n+i], &one, &C[CIndx[i]], &nnIndxLU[n+i], &c[nnIndxLU[i]], &inc, &zero, &B[nnIndxLU[i]], &inc FCONE);
       F[i] = 1 - F77_NAME(ddot)(&nnIndxLU[n+i], &B[nnIndxLU[i]], &inc, &c[nnIndxLU[i]], &inc) + theta[0];
     }else{
@@ -304,7 +308,7 @@ extern "C" {
     omp_set_num_threads(nThreads);
 #else
     if(nThreads > 1){
-      warning("n.omp.threads > %i, but source not compiled with OpenMP support.", nThreads);
+      Rf_warning("n.omp.threads > %i, but source not compiled with OpenMP support.", nThreads);
       nThreads = 1;
     }
 #endif
@@ -343,10 +347,10 @@ extern "C" {
 
     //allocated for the nearest neighbor index vector (note, first location has no neighbors).
     int nIndx = static_cast<int>(static_cast<double>(1+m)/2*m+(n-m-1)*m);
-    SEXP nnIndx_r; PROTECT(nnIndx_r = allocVector(INTSXP, nIndx)); nProtect++; int *nnIndx = INTEGER(nnIndx_r);
+    SEXP nnIndx_r; PROTECT(nnIndx_r = Rf_allocVector(INTSXP, nIndx)); nProtect++; int *nnIndx = INTEGER(nnIndx_r);
     //SEXP d_r; PROTECT(d_r = allocVector(REALSXP, nIndx)); nProtect++; double *d = REAL(d_r);
     double *d = (double *) R_alloc(nIndx, sizeof(double));
-    SEXP nnIndxLU_r; PROTECT(nnIndxLU_r = allocVector(INTSXP, 2*n)); nProtect++; int *nnIndxLU = INTEGER(nnIndxLU_r); //first column holds the nnIndx index for the i-th location and the second columns holds the number of neighbors the i-th location has (the second column is a bit of a waste but will simlifying some parallelization).
+    SEXP nnIndxLU_r; PROTECT(nnIndxLU_r = Rf_allocVector(INTSXP, 2*n)); nProtect++; int *nnIndxLU = INTEGER(nnIndxLU_r); //first column holds the nnIndx index for the i-th location and the second columns holds the number of neighbors the i-th location has (the second column is a bit of a waste but will simlifying some parallelization).
     //make the neighbor index
     if(verbose){
       Rprintf("----------------------------------------\n");
@@ -397,9 +401,9 @@ extern "C" {
 #endif
     }
 
-    SEXP B_r; PROTECT(B_r = allocVector(REALSXP, nIndx)); nProtect++; double *B = REAL(B_r);
+    SEXP B_r; PROTECT(B_r = Rf_allocVector(REALSXP, nIndx)); nProtect++; double *B = REAL(B_r);
 
-    SEXP F_r; PROTECT(F_r = allocVector(REALSXP, n)); nProtect++; double *F = REAL(F_r);
+    SEXP F_r; PROTECT(F_r = Rf_allocVector(REALSXP, n)); nProtect++; double *F = REAL(F_r);
 
     double *c =(double *) R_alloc(nIndx, sizeof(double));
     double *C = (double *) R_alloc(j, sizeof(double)); zeros(C, j);
@@ -413,22 +417,22 @@ extern "C" {
 
 
 
-    PROTECT(result_r = allocVector(VECSXP, nResultListObjs)); nProtect++;
-    PROTECT(resultName_r = allocVector(VECSXP, nResultListObjs)); nProtect++;
+    PROTECT(result_r = Rf_allocVector(VECSXP, nResultListObjs)); nProtect++;
+    PROTECT(resultName_r = Rf_allocVector(VECSXP, nResultListObjs)); nProtect++;
 
     SET_VECTOR_ELT(result_r, 0, B_r);
-    SET_VECTOR_ELT(resultName_r, 0, mkChar("B"));
+    SET_VECTOR_ELT(resultName_r, 0, Rf_mkChar("B"));
 
     SET_VECTOR_ELT(result_r, 1, F_r);
-    SET_VECTOR_ELT(resultName_r, 1, mkChar("F"));
+    SET_VECTOR_ELT(resultName_r, 1, Rf_mkChar("F"));
 
     SET_VECTOR_ELT(result_r, 2, nnIndxLU_r);
-    SET_VECTOR_ELT(resultName_r, 2, mkChar("nnIndxLU"));
+    SET_VECTOR_ELT(resultName_r, 2, Rf_mkChar("nnIndxLU"));
 
     SET_VECTOR_ELT(result_r, 3, nnIndx_r);
-    SET_VECTOR_ELT(resultName_r, 3, mkChar("nnIndx"));
+    SET_VECTOR_ELT(resultName_r, 3, Rf_mkChar("nnIndx"));
 
-    namesgets(result_r, resultName_r);
+    Rf_namesgets(result_r, resultName_r);
 
     //unprotect
     UNPROTECT(nProtect);
@@ -522,16 +526,16 @@ extern "C" {
     int nResultListObjs = 2, nProtect=0;
 
 
-    PROTECT(result_r = allocVector(VECSXP, nResultListObjs)); nProtect++;
-    PROTECT(resultName_r = allocVector(VECSXP, nResultListObjs)); nProtect++;
+    PROTECT(result_r = Rf_allocVector(VECSXP, nResultListObjs)); nProtect++;
+    PROTECT(resultName_r = Rf_allocVector(VECSXP, nResultListObjs)); nProtect++;
 
     SET_VECTOR_ELT(result_r, 0, invZ_val_r);
-    SET_VECTOR_ELT(resultName_r, 0, mkChar("invZ_val"));
+    SET_VECTOR_ELT(resultName_r, 0, Rf_mkChar("invZ_val"));
 
     SET_VECTOR_ELT(result_r, 1, invZ_loc_r);
-    SET_VECTOR_ELT(resultName_r, 1, mkChar("invZ_loc"));
+    SET_VECTOR_ELT(resultName_r, 1, Rf_mkChar("invZ_loc"));
 
-    namesgets(result_r, resultName_r);
+    Rf_namesgets(result_r, resultName_r);
 
     //unprotect
     UNPROTECT(nProtect);
@@ -787,7 +791,7 @@ extern "C" {
     int nProtect = 0;
 
 
-    SEXP P_index_r; PROTECT(P_index_r = allocVector(INTSXP, nsample)); nProtect++; int *P_index = INTEGER(P_index_r);
+    SEXP P_index_r; PROTECT(P_index_r = Rf_allocVector(INTSXP, nsample)); nProtect++; int *P_index = INTEGER(P_index_r);
     int *invP_freq = (int *) R_alloc (n, sizeof(int));
 
     int *invP_loc = (int *) R_alloc ((n + 1), sizeof(int));
@@ -799,23 +803,23 @@ extern "C" {
     int i, k, l;
     double xrand;
 
-    SEXP lDaughter_r; PROTECT(lDaughter_r = allocVector(INTSXP, nrnodes)); nProtect++; int *lDaughter = INTEGER(lDaughter_r);
+    SEXP lDaughter_r; PROTECT(lDaughter_r = Rf_allocVector(INTSXP, nrnodes)); nProtect++; int *lDaughter = INTEGER(lDaughter_r);
 
-    SEXP rDaughter_r; PROTECT(rDaughter_r = allocVector(INTSXP, nrnodes)); nProtect++; int *rDaughter = INTEGER(rDaughter_r);
+    SEXP rDaughter_r; PROTECT(rDaughter_r = Rf_allocVector(INTSXP, nrnodes)); nProtect++; int *rDaughter = INTEGER(rDaughter_r);
 
-    SEXP nodestatus_r; PROTECT(nodestatus_r = allocVector(INTSXP, nrnodes)); nProtect++; int *nodestatus = INTEGER(nodestatus_r);
+    SEXP nodestatus_r; PROTECT(nodestatus_r = Rf_allocVector(INTSXP, nrnodes)); nProtect++; int *nodestatus = INTEGER(nodestatus_r);
 
     int *nodestart = (int *) R_alloc (nrnodes, sizeof(int));
     int *nodepop = (int *) R_alloc (nrnodes, sizeof(int));
 
-    SEXP mbest_r; PROTECT(mbest_r = allocVector(INTSXP, nrnodes)); nProtect++; int *mbest = INTEGER(mbest_r);
-    SEXP upper_r; PROTECT(upper_r = allocVector(REALSXP, nrnodes)); nProtect++; double *upper = REAL(upper_r);
+    SEXP mbest_r; PROTECT(mbest_r = Rf_allocVector(INTSXP, nrnodes)); nProtect++; int *mbest = INTEGER(mbest_r);
+    SEXP upper_r; PROTECT(upper_r = Rf_allocVector(REALSXP, nrnodes)); nProtect++; double *upper = REAL(upper_r);
 
     int *avnode_number = (int *) R_alloc (nrnodes, sizeof(int));
     for(int avcount = 0; avcount < nrnodes; avcount++){
       avnode_number[avcount] = -99;
     }
-    SEXP avnode_r; PROTECT(avnode_r = allocVector(REALSXP, nrnodes)); nProtect++; double *avnode = REAL(avnode_r);
+    SEXP avnode_r; PROTECT(avnode_r = Rf_allocVector(REALSXP, nrnodes)); nProtect++; double *avnode = REAL(avnode_r);
 
 
     for(l = 0; l < nrnodes; l++){
@@ -973,7 +977,7 @@ extern "C" {
     }
 
     PutRNGstate();
-    SEXP ytest_r; PROTECT(ytest_r = allocVector(REALSXP, ntest)); nProtect++; double *ytest = REAL(ytest_r);
+    SEXP ytest_r; PROTECT(ytest_r = Rf_allocVector(REALSXP, ntest)); nProtect++; double *ytest = REAL(ytest_r);
 
     predictRegTree(Xtest, ntest, p, lDaughter, rDaughter, nodestatus, ytest, upper, avnode, mbest);
 
@@ -982,34 +986,34 @@ extern "C" {
     int nResultListObjs = 8;
 
 
-    PROTECT(result_r = allocVector(VECSXP, nResultListObjs)); nProtect++;
-    PROTECT(resultName_r = allocVector(VECSXP, nResultListObjs)); nProtect++;
+    PROTECT(result_r = Rf_allocVector(VECSXP, nResultListObjs)); nProtect++;
+    PROTECT(resultName_r = Rf_allocVector(VECSXP, nResultListObjs)); nProtect++;
 
     SET_VECTOR_ELT(result_r, 0, P_index_r);
-    SET_VECTOR_ELT(resultName_r, 0, mkChar("P_index"));
+    SET_VECTOR_ELT(resultName_r, 0, Rf_mkChar("P_index"));
 
     SET_VECTOR_ELT(result_r, 1, ytest_r);
-    SET_VECTOR_ELT(resultName_r, 1, mkChar("ytest"));
+    SET_VECTOR_ELT(resultName_r, 1, Rf_mkChar("ytest"));
 
     SET_VECTOR_ELT(result_r, 2, lDaughter_r);
-    SET_VECTOR_ELT(resultName_r, 2, mkChar("lDaughter"));
+    SET_VECTOR_ELT(resultName_r, 2, Rf_mkChar("lDaughter"));
 
     SET_VECTOR_ELT(result_r, 3, rDaughter_r);
-    SET_VECTOR_ELT(resultName_r, 3, mkChar("rDaughter"));
+    SET_VECTOR_ELT(resultName_r, 3, Rf_mkChar("rDaughter"));
 
     SET_VECTOR_ELT(result_r, 4, nodestatus_r);
-    SET_VECTOR_ELT(resultName_r, 4, mkChar("nodestatus"));
+    SET_VECTOR_ELT(resultName_r, 4, Rf_mkChar("nodestatus"));
 
     SET_VECTOR_ELT(result_r, 5, upper_r);
-    SET_VECTOR_ELT(resultName_r, 5, mkChar("upper"));
+    SET_VECTOR_ELT(resultName_r, 5, Rf_mkChar("upper"));
 
     SET_VECTOR_ELT(result_r, 6, avnode_r);
-    SET_VECTOR_ELT(resultName_r, 6, mkChar("avnode"));
+    SET_VECTOR_ELT(resultName_r, 6, Rf_mkChar("avnode"));
 
     SET_VECTOR_ELT(result_r, 7, mbest_r);
-    SET_VECTOR_ELT(resultName_r, 7, mkChar("mbest"));
+    SET_VECTOR_ELT(resultName_r, 7, Rf_mkChar("mbest"));
 
-    namesgets(result_r, resultName_r);
+    Rf_namesgets(result_r, resultName_r);
 
     //unprotect
     UNPROTECT(nProtect);
@@ -1034,7 +1038,7 @@ extern "C" {
     int *mbest = INTEGER(mbest_r);
 
     int nProtect = 0;
-    SEXP ytest_r; PROTECT(ytest_r = allocVector(REALSXP, ntest)); nProtect++; double *ytest = REAL(ytest_r);
+    SEXP ytest_r; PROTECT(ytest_r = Rf_allocVector(REALSXP, ntest)); nProtect++; double *ytest = REAL(ytest_r);
 
     predictRegTree(Xtest, ntest, p, lDaughter, rDaughter, nodestatus, ytest, upper, avnode, mbest);
 
@@ -1042,13 +1046,13 @@ extern "C" {
     int nResultListObjs = 1;
 
 
-    PROTECT(result_r = allocVector(VECSXP, nResultListObjs)); nProtect++;
-    PROTECT(resultName_r = allocVector(VECSXP, nResultListObjs)); nProtect++;
+    PROTECT(result_r = Rf_allocVector(VECSXP, nResultListObjs)); nProtect++;
+    PROTECT(resultName_r = Rf_allocVector(VECSXP, nResultListObjs)); nProtect++;
 
     SET_VECTOR_ELT(result_r, 0, ytest_r);
-    SET_VECTOR_ELT(resultName_r, 0, mkChar("ytest"));
+    SET_VECTOR_ELT(resultName_r, 0, Rf_mkChar("ytest"));
 
-    namesgets(result_r, resultName_r);
+    Rf_namesgets(result_r, resultName_r);
 
     //unprotect
     UNPROTECT(nProtect);
